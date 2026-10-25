@@ -77,3 +77,19 @@ test('真實資料回覆保留 TMDB 出處，之後查私人票根不帶入前�
     assert.doesNotMatch((await bot.respond('alice', '我的票根')).text, /資料來源：TMDB/);
   } finally { store.close(); }
 });
+test('ADK 實際呼叫影城工具，場次以程式格式輸出，不採用模型臆造時間', async () => {
+  const store = new Store(), model = new ScriptedModel('cinema_schedule', { cinema: '松菸誠品', date: '', afterTime: '18:00', onlyUpcoming: true });
+  const calls = [];
+  const cinema = { schedule: async input => {
+    calls.push(input);
+    return { status: 'ok', cinema: '松菸誠品電影院', date: '2026-10-25', afterTime: '18:30', movies: [{ title: '測試片', times: ['21:30'] }], sourceUrl: 'https://meet.eslite.com/tw/tc/gallery/movieschedule/201803020001', bookingUrl: 'https://arthouse.eslite.com/visAgreement.aspx' };
+  } };
+  try {
+    const bot = new MovieCompanion({ store, model, movies: new MovieSource(), cinema, trace: () => {} });
+    const result = await bot.respond('alice', '今晚松菸誠品有哪些電影？');
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].onlyUpcoming, true);
+    assert.match(result.text, /測試片：21:30/);
+    assert.doesNotMatch(result.text, /測試模型完成|示範資料模式/);
+  } finally { store.close(); }
+});

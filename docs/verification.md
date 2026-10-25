@@ -5,7 +5,7 @@
 ## 已實際驗證
 
 - Node.js v24.22.1、Google ADK 2.3.0、Gemini 模型 `gemini-3.5-flash-lite`。
-- `npm test`：16 項測試，涵蓋真正 ADK Runner 與 FunctionTool 流程（模型使用測試替身）、票根確認前不寫入、取消、過期、去重、使用者隔離、SQLite 重啟後保留、LINE 簽章與非同步回應、TMDB 錯誤處理、來源連結篩選與關於入口。
+- `npm test`：24 項測試，涵蓋真正 ADK Runner 與 FunctionTool 流程（模型使用測試替身）、票根確認前不寫入、取消、過期、去重、使用者隔離、SQLite 重啟後保留、LINE 簽章與非同步回應、TMDB 錯誤處理、來源連結篩選與關於入口。
 - `npm run demo`：離線工具示範成功；這項不呼叫模型。
 - `npm run smoke:adk`：真的連到 Gemini，依序觀察到 `now_playing`、`prepare_ticket`、`list_tickets`。使用記憶體資料庫與虛構電影，確認動作由測試程式模擬。
 - `npm audit --omit=dev --audit-level=moderate`：未發現已知漏洞（執行當下的掃描結果）。
@@ -55,10 +55,19 @@ Unknown name "exclusiveMinimum" ... Cannot find field.
 - 切換前後比對 SQLite，原有 1 張票根的 ID、擁有者、內容與建立時間皆保留。測試使用另一個記憶體資料庫，不寫正式票根。
 - 使用者已回報「已收到真實電影與來源連結」。服務記錄同時顯示切換後的 LINE 訊息確實呼叫 `now_playing`，事件為 `done`；完成 LINE → ADK → TMDB → LINE 的實際收發驗證。
 
+## 松菸誠品官方場次（2026-10-25）
+
+- 新增 ADK `cinema_schedule` 工具，讀取誠品公開時刻表；不是影城 API 或全台影城資料庫。
+- 24 項測試通過，新增官方 HTML 結構解析、日期與時段、多場次、跨年、未公告、快取、格式變更與真正 ADK Runner 的影城工具執行驗證。測試 HTML 為自製資料。
+- 第一次真實測試：Node fetch 取得官網 HTTP 403。相同公開頁面透過標準 `node:https` client 回傳 200 並解析出 21 部電影區塊；未使用登入資訊、瀏覽器 cookie 或驗證挑戰。
+- `npm run smoke:cinema` 真正呼叫 Gemini，觀察到 `cinema_schedule`，篩出 2026-10-25 晚上 18:00 起的 6 部公告電影；後續呼叫 `search_movies`，取得《進擊的鼓手》簡介。這是當次讀取結果，之後可能變動。
+- 場次時間採程式格式輸出，保留官方更新與讀取時間；5 分鐘快取、併發請求合併，失敗不回傳過期資料作為現在場次。
+- 真實手機影城場次回覆待使用者確認。
+
 ## 尚未驗證
 
 - 手機操作截圖與查無資料時的手機回覆。
-- 即時場次：尚未串接；目前只提供官網入口。
+- 誠品以外影城的場次、即時座位、票價與代訂票。
 - 雲端部署、多人負載、票根圖片與 MINI App。
 
 下一步用 LINE 問「最近有什麼電影可以查？」或「全面啟動在講什麼？有使用者評論嗎？」，確認真實資料與來源。實際 LINE 截圖待使用者補上。

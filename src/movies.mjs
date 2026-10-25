@@ -5,8 +5,11 @@ const fixtures = [
 ];
 export const showtimeLinks = () => ({
   status: 'links_only',
-  notice: '尚未串接即時場次。請到影城官網選擇地點、日期與電影確認，這些是查詢入口。',
-  sources: [{ name: '威秀影城', url: 'https://www.vscinemas.com.tw/' }],
+  notice: '松菸誠品可用 cinema_schedule 讀取官方現有公告；其他影城目前只提供官網入口，沒有全台即時座位或票價。',
+  sources: [
+    { name: '松菸誠品電影院官方時刻表', url: 'https://meet.eslite.com/tw/tc/gallery/movieschedule/201803020001' },
+    { name: '威秀影城', url: 'https://www.vscinemas.com.tw/' },
+  ],
 });
 
 export class MovieSource {

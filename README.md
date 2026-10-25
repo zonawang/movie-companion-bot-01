@@ -2,7 +2,7 @@
 
 從新的 LINE 官方帳號開始，做一個能查電影、留下觀影心得、找回共同回憶的電影夥伴。**這個專案的學習與分享主軸是 Google ADK。**
 
-第一版已實作 LINE webhook、ADK agent、六個工具與需要確認的個人票根收藏。2026-10-25 已完成新 LINE 帳號的電影查詢收發，並接上真實 TMDB 資料；目前仍由本機服務與開發用 HTTPS tunnel 運行，尚未部署為長期線上服務。詳見 [驗證紀錄](docs/verification.md)。
+第一版已實作 LINE webhook、ADK agent、七個工具與需要確認的個人票根收藏。2026-10-25 已完成新 LINE 帳號的電影查詢收發，並接上真實 TMDB 資料；目前仍由本機服務與開發用 HTTPS tunnel 運行，尚未部署為長期線上服務。詳見 [驗證紀錄](docs/verification.md)。
 
 ## ADK 實際負責什麼？
 
@@ -12,6 +12,9 @@ flowchart LR
   Webhook --> Runner[ADK Runner：對話與執行事件]
   Runner --> Agent[ADK LlmAgent + Gemini：理解需求、選工具]
   Agent --> Movies[ADK FunctionTool：上映候選、片名、評論、官網入口]
+  Agent --> Cinema[ADK FunctionTool：查松菸誠品場次]
+  Cinema --> Eslite[誠品官方時刻表]
+  Cinema --> Reply
   Agent --> Draft[ADK FunctionTool：準備票根草稿]
   Agent --> Recall[ADK FunctionTool：查自己的票根]
   Movies --> Reply[LINE 回覆]
@@ -34,7 +37,8 @@ ADK 的程式集中在 [src/agent.mjs](src/agent.mjs)。LINE 訊息進來會真�
 | 最近可以看什麼？ | `now_playing` | 示範模式回虛構電影；TMDB 模式查台灣上映候選 |
 | 這部電影在講什麼？ | `search_movies` | 搜尋片名與繁中簡介，預設不劇透 |
 | 有人寫評論嗎？ | `movie_reviews` | TMDB 使用者評論作者與原文連結；不是專業影評總覽 |
-| 場次在哪查？ | `showtime_links` | 提供威秀官網入口，尚無即時場次、票價或剩餘座位 |
+| 松菸誠品今晚放什麼？ | `cinema_schedule` | 查官方公告片單與場次，可篩選日期與時段 |
+| 其他影城場次在哪查？ | `showtime_links` | 提供官網入口，尚無其他影城場次、票價或剩餘座位 |
 | 記下跟誰看、心得 | `prepare_ticket` | 建立 10 分鐘有效的草稿，點確認後才存檔 |
 | 跟小安看過什麼？ | `list_tickets` | 搜尋自己的最近 200 筆票根，最多顯示 20 筆 |
 
@@ -115,7 +119,13 @@ TMDB_READ_ACCESS_TOKEN=你的_Read_Access_Token
 
 LINE 回覆會保留 TMDB 資料來源與實際工具回傳的電影／評論連結。輸入「關於」可查看 [關於與資料來源](docs/credits.md)；這是固定資訊入口，電影查詢仍由 ADK 選擇並執行工具。
 
-TMDB 的 `now_playing` 與 `region=TW` 是電影上映候選資料，不能保證某間影城今天有場次。評論目前只查繁中使用者評論；空結果會如實說明，不會自動生成影評。即時場次的資料來源尚待確認。
+TMDB 的 `now_playing` 與 `region=TW` 是電影上映候選資料，不能保證某間影城今天有場次。評論目前只查繁中使用者評論；空結果會如實說明，不會自動生成影評。松菸誠品場次另由官方時刻表提供；其他影城的場次資料尚未串接。
+
+## 查松菸誠品的片單與場次
+
+在 LINE 問「今晚松菸誠品有哪些電影和場次？」或「明天誠品有哪些片？」，ADK 會呼叫 `cinema_schedule` 讀取官網目前的公告。也能追問片名的介紹，由 TMDB 工具補充。詳見 [松菸誠品影城工具](docs/cinema-eslite.md)。
+
+回覆附官方更新時間、讀取時間與訂票入口，使用 5 分鐘快取。查無公告不等於沒有電影，沒有符合時段的場次也不代表售完。
 
 ## 學習節奏與後續
 
@@ -123,7 +133,7 @@ TMDB 的 `now_playing` 與 `region=TW` 是電影上映候選資料，不能保�
 
 目前資料存在本機 SQLite、對話存在 ADK 記憶體 session；重新啟動會清除對話，已確認的票根與未過期草稿仍保留。這版適合單機、小量開發測試，佇列一次處理一個事件；超過 50 秒還沒開始的事件標為過期，請重新傳送。LINE 回覆失敗會記錄狀態，不自動重送已執行過的 AI 任務。
 
-正式部署前再改用持久資料庫、可擴展佇列與權杖管理。若要用 Cloud Run，不能直接依賴容器內的 SQLite 留存票根。評分、海報收藏牆、照片票根、MINI App、專業影評整合與即時場次尚未實作。
+正式部署前再改用持久資料庫、可擴展佇列與權杖管理。若要用 Cloud Run，不能直接依賴容器內的 SQLite 留存票根。評分、海報收藏牆、照片票根、MINI App、專業影評整合、其他影城場次與即時座位資訊尚未實作。
 
 ## 資料來源與參考
 

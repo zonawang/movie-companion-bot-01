@@ -3,17 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=24.13.0", "npm": ">=11.8.0" },
+  "engines": {
+    "node": ">=24.13.0",
+    "npm": ">=11.8.0"
+  },
   "scripts": {
     "start": "node src/server.mjs",
     "chat": "node src/cli.mjs",
     "demo": "node examples/offline-demo.mjs",
     "smoke:adk": "node examples/adk-smoke.mjs",
     "smoke:tmdb": "node examples/tmdb-smoke.mjs",
+    "smoke:cinema": "node examples/cinema-smoke.mjs",
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
     "@google/adk": "2.3.0",
+    "cheerio": "^1.2.0",
     "dotenv": "^17.0.0",
     "zod": "^4.6.7"
   }
