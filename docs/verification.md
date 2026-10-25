@@ -32,12 +32,20 @@ Unknown name "exclusiveMinimum" ... Cannot find field.
 
 安裝時也掃到間接依賴的已知漏洞，已在現有版本範圍內更新 lockfile，重新掃描為 0，沒有強制升級 ADK 的主要版本。
 
-## 尚未驗證
+## 新 LINE Bot 實際串接（2026-10-25）
 
-- 新 LINE 官方帳號的建立、Messaging API 設定與真實手機收發。
-- 可公開連線的 HTTPS tunnel 與 LINE Verify 按鈕。
+- 使用者已建立新帳號並在本機填入 Channel secret 與 Channel access token。
+- LINE API 驗證 token 屬於指定的 Channel ID；本機 Bot 與開發用 HTTPS tunnel 已啟動。
+- LINE 官方 webhook 測試回傳 `success: true`、`statusCode: 200`，實際簽章驗證通過。
+- 已設定 webhook URL；使用者開啟 Use webhook 後，API 確認 `active: true`。
+- 使用者回報「LINE 有收到電影回覆」。同時服務記錄顯示真正呼叫 `now_playing`，事件狀態為 `done`，表示 LINE 回覆 API 成功。
+- 未帶簽章的公開 webhook 請求回傳 401；LINE API 也接受票根確認按鈕的訊息格式。
+- 本次只驗證查詢電影的手機流程；尚未在手機確認保存票根。電影仍為虛構示範模式。
+- 此連線依賴本機服務與臨時 tunnel，尚未部署為常駐線上服務。臨時網址與金鑰不寫入 repo。
+
+## 尚未驗證
 - 真實 TMDB token、目前上映電影或真實評論回傳。
 - 即時場次：尚未串接；目前只提供官網入口。
 - 雲端部署、多人負載、票根圖片與 MINI App。
 
-下一步先完成 [LINE 帳號設定](line-setup.md)，用手機傳第一句話。這個步驟完成後，才能補上真的 LINE 截圖與串接結果。
+下一步用手機建立一張票根，檢查草稿後點確認，再用同伴查回；接著才切換到真實 TMDB 資料。實際 LINE 截圖待使用者補上。
