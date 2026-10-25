@@ -5,6 +5,7 @@ import { Store } from './store.mjs';
 import { MovieSource } from './movies.mjs';
 import { MovieCompanion } from './agent.mjs';
 import { draftText, decisionReply } from './line.mjs';
+import { aboutReply } from './attribution.mjs';
 
 let store, rl;
 try {
@@ -17,6 +18,7 @@ try {
     const input = (await rl.question('\n你：')).trim();
     if (input === 'exit') break;
     if (!input) continue;
+    if (['關於', '資料來源', 'about'].includes(input.toLowerCase())) { console.log(aboutReply().text); continue; }
     if (input === '/confirm' || input === '/cancel') {
       const draft = store.pending('local-user');
       console.log(draft ? decisionReply(store, 'local-user', `ticket:${input === '/confirm' ? 'confirm' : 'cancel'}:${draft.id}`).text : '目前沒有有效的待確認草稿。');

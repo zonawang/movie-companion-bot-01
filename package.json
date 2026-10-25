@@ -9,6 +9,7 @@
     "chat": "node src/cli.mjs",
     "demo": "node examples/offline-demo.mjs",
     "smoke:adk": "node examples/adk-smoke.mjs",
+    "smoke:tmdb": "node examples/tmdb-smoke.mjs",
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {

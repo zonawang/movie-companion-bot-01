@@ -64,3 +64,16 @@ test('模型帶入其他人的 actor 參數，也只能查目前使用者的票�
     assert.deepEqual(model.responses[0].response.tickets, []);
   } finally { store.close(); }
 });
+test('真實資料回覆保留 TMDB 出處，之後查私人票根不帶入前一輪電影來源', async () => {
+  const store = new Store(), model = new ScriptedModel('now_playing', {});
+  const movies = { mode: 'tmdb', movies: async () => ({ status: 'ok', source: 'TMDB', movies: [{ id: 27205, title: '全面啟動', url: 'https://www.themoviedb.org/movie/27205' }] }) };
+  try {
+    const bot = new MovieCompanion({ store, model, movies, trace: () => {} });
+    const first = await bot.respond('alice', '查電影');
+    assert.match(first.text, /資料來源：TMDB/);
+    assert.match(first.text, /https:\/\/www.themoviedb.org\/movie\/27205/);
+    assert.doesNotMatch(first.text, /示範資料模式/);
+    model.name = 'list_tickets'; model.args = { keyword: '' };
+    assert.doesNotMatch((await bot.respond('alice', '我的票根')).text, /資料來源：TMDB/);
+  } finally { store.close(); }
+});

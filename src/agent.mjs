@@ -3,13 +3,21 @@ import { z } from 'zod';
 import { randomUUID } from 'node:crypto';
 import { ticketSchema } from './store.mjs';
 import { showtimeLinks } from './movies.mjs';
+import { tmdbAttribution } from './attribution.mjs';
 
 export function createMovieAgent({ actor, turn, store, movies, model, trace = () => {} }) {
   const tool = (name, description, parameters, execute) => new FunctionTool({
     name, description, parameters,
     execute: async input => {
       trace(name);
-      try { return await execute(input); }
+      try {
+        const result = await execute(input);
+        if (result.status === 'ok' && result.source?.startsWith('TMDB')) {
+          turn.tmdbUsed = true;
+          turn.sources.push(...(result.movies || []).map(movie => movie.url), ...(result.reviews || []).map(review => review.url));
+        }
+        return result;
+      }
       catch { return { status: 'invalid', message: '工具輸入無法使用，請詢問缺少的資訊；心得須逐字引用。' }; }
     },
   });
@@ -20,8 +28,12 @@ export function createMovieAgent({ actor, turn, store, movies, model, trace = ()
       '請用繁體中文、簡短自然的口吻回覆。你是電影夥伴，所有電影事實與個人紀錄都必須先呼叫工具確認。',
       '今天的日期：' + new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Taipei' }).format(new Date()) + '（Asia/Taipei）。',
       '使用 now_playing 查上映、search_movies 查片名與簡介，先查出電影 ID 才能查評論。',
-      '示範模式務必說明是虛構資料，不可宣稱為目前上映。工具失敗或無資料要如實說明。',
+      movies.mode === 'tmdb'
+        ? '目前資料模式是 tmdb：工具會呼叫真正的 TMDB API，status=ok、source=TMDB 的結果是真實資料，不是示範或虛構電影。回覆不須提及示範模式。'
+        : '目前資料模式是 demo：電影工具只提供虛構示範資料，務必明確標示，不可宣稱為目前上映。',
+      '工具失敗或無資料要如實說明，不可用自己的知識或示範資料補上。',
       '簡介預設不劇透。評論只分享工具提供的作者和連結，不編造專業影評或整體評價。',
+      'TMDB 上映候選不保證特定影城或日期有場次；回覆時說明這項限制。查無繁中評論時直接說明，不自行生成或猜測。',
       '場次一律使用 showtime_links；目前只有官網入口，不要生成時間、票價、剩餘座位。',
       '想記錄觀影時，用 prepare_ticket 建立待確認草稿；缺少片名或日期先詢問。',
       'cinema、companions 未提供填空字串。note 必須逐字引用使用者心得，沒有提供則留空。',
@@ -66,7 +78,7 @@ export class MovieCompanion {
       if (session && (session.turns >= 20 || Date.now() - session.used > 30 * 60_000)) { this.sessions.delete(actor); session = null; }
       if (!session) {
         if (this.sessions.size >= 100) return { text: '目前使用人數較多，請稍後再試。' };
-        const turn = { request, originals: [] };
+        const turn = { request, originals: [], sources: [], tmdbUsed: false };
         const agent = createMovieAgent({ actor, turn, store: this.store, movies: this.movies, model: this.model, trace: this.trace });
         const runner = new InMemoryRunner({ agent, appName: 'movie_companion' });
         const state = await runner.sessionService.createSession({ appName: runner.appName, userId: actor });
@@ -75,6 +87,8 @@ export class MovieCompanion {
       }
       session.turn.request = request;
       session.turn.draft = null;
+      session.turn.sources = [];
+      session.turn.tmdbUsed = false;
       session.turn.originals.push(text);
       session.turns += 1; session.used = Date.now();
       let answer = '';
@@ -90,7 +104,8 @@ export class MovieCompanion {
         }
       }
       const prefix = this.movies.mode === 'demo' ? '【示範資料模式：電影資料為虛構；你確認儲存的票根會保留】\n' : '';
-      return { text: prefix + (answer || '這次沒有取得完整回覆，請再試一次。'), draft: session.turn.draft };
+      const attribution = session.turn.tmdbUsed ? '\n\n' + tmdbAttribution(session.turn.sources) : '';
+      return { text: prefix + (answer || '這次沒有取得完整回覆，請再試一次。').slice(0, 3000) + attribution, draft: session.turn.draft };
     } catch (error) {
       this.onError(error);
       this.sessions.delete(actor);

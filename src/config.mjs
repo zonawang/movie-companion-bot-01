@@ -15,6 +15,6 @@ export function config(env = process.env, { line = false } = {}) {
     database: env.SQLITE_PATH || './data/movie-bot.sqlite',
     channelSecret: env.LINE_CHANNEL_SECRET,
     channelToken: env.LINE_CHANNEL_ACCESS_TOKEN,
-    tmdbToken: env.TMDB_READ_ACCESS_TOKEN,
+    tmdbToken: env.TMDB_READ_ACCESS_TOKEN?.trim(),
   };
 }

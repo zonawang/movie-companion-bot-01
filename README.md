@@ -2,7 +2,7 @@
 
 從新的 LINE 官方帳號開始，做一個能查電影、留下觀影心得、找回共同回憶的電影夥伴。**這個專案的學習與分享主軸是 Google ADK。**
 
-第一版已實作 LINE webhook、ADK agent、六個工具與需要確認的個人票根收藏。尚未部署，新的 LINE 帳號與真實 TMDB 資料需要你填入本機設定後串接測試。
+第一版已實作 LINE webhook、ADK agent、六個工具與需要確認的個人票根收藏。2026-10-25 已完成新 LINE 帳號的電影查詢收發，並接上真實 TMDB 資料；目前仍由本機服務與開發用 HTTPS tunnel 運行，尚未部署為長期線上服務。詳見 [驗證紀錄](docs/verification.md)。
 
 ## ADK 實際負責什麼？
 
@@ -92,9 +92,11 @@ npm run demo
 
 `npm run smoke:adk` 會真的呼叫 Gemini，驗證查電影 → 建立草稿 → 模擬確認 → 查回票根，會使用 API 額度，測試資料只留在記憶體。
 
+`npm run smoke:tmdb` 會真正使用 Gemini 與 TMDB，驗證查上映候選 → 搜尋《全面啟動》→ 查評論連結。需要本機 Gemini key 與 TMDB token，使用記憶體資料庫，不傳送 LINE 訊息或修改正式票根。
+
 ## 用 LINE 試這三句
 
-1. 「最近有什麼電影可以查？」→ 應看到虛構示範電影及工具名稱。
+1. 「最近有什麼電影可以查？」→ `demo` 模式會標示虛構電影；`tmdb` 模式會查真實上映候選並附來源。
 2. 「我 2026-10-25 跟小安看了月台上的貓，心得是配樂很好聽」→ 檢查草稿，點「確認儲存票根」。
 3. 「我跟小安看過哪些電影？」→ 應從已儲存票根查回紀錄。
 
@@ -111,6 +113,8 @@ TMDB_READ_ACCESS_TOKEN=你的_Read_Access_Token
 
 重新啟動 server。這裡使用的是 Bearer Read Access Token，請不要把另一種 API key 填進同一欄。
 
+LINE 回覆會保留 TMDB 資料來源與實際工具回傳的電影／評論連結。輸入「關於」可查看 [關於與資料來源](docs/credits.md)；這是固定資訊入口，電影查詢仍由 ADK 選擇並執行工具。
+
 TMDB 的 `now_playing` 與 `region=TW` 是電影上映候選資料，不能保證某間影城今天有場次。評論目前只查繁中使用者評論；空結果會如實說明，不會自動生成影評。即時場次的資料來源尚待確認。
 
 ## 學習節奏與後續
@@ -126,6 +130,6 @@ TMDB 的 `now_playing` 與 `region=TW` 是電影上映候選資料，不能保�
 - [Google ADK TypeScript](https://adk.dev/get-started/typescript/) 與 [Function tools](https://adk.dev/tools-custom/function-tools/)
 - [LINE Messaging API 開始使用](https://developers.line.biz/en/docs/messaging-api/getting-started/) 與 [驗證 webhook 簽章](https://developers.line.biz/en/docs/messaging-api/verify-webhook-signature/)
 - [TMDB 上映候選](https://developer.themoviedb.org/reference/movie-now-playing-list)、[電影搜尋](https://developer.themoviedb.org/reference/search-movie)、[使用者評論](https://developer.themoviedb.org/reference/movie-reviews)
-- [TMDB 使用與標示規範](https://developer.themoviedb.org/docs/faq)：接入資料後，對外產品須依規範提供來源與核准標誌；目前沒有顯示海報或 TMDB 標誌。
+- [TMDB 使用與標示規範](https://developer.themoviedb.org/docs/faq)：標誌、聲明與資料範圍集中在 [關於與資料來源](docs/credits.md)，Bot 內可輸入「關於」開啟。
 
 This product uses the TMDB API but is not endorsed or certified by TMDB.

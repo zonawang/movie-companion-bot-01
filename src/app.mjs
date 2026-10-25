@@ -1,5 +1,6 @@
 import { createServer } from 'node:http';
 import { parseEvents, verifySignature, lineMessages, decisionReply } from './line.mjs';
+import { aboutReply } from './attribution.mjs';
 
 export function createWebhookServer({ secret, store, bot, reply, log = console.error }) {
   let running = false;
@@ -15,8 +16,9 @@ export function createWebhookServer({ secret, store, bot, reply, log = console.e
           if (Date.now() - job.created > 50_000) { store.finishJob(job.id, 'expired'); continue; }
           const event = job.event, actor = event.source.userId;
           let result;
-          if (event.type === 'follow') result = { text: '我是你的電影夥伴！可以問「最近有什麼電影？」、查簡介或影評，也能記錄「我 2026-10-25 跟小安看了月台上的貓，心得是配樂很好聽」。票根會先讓你確認再儲存。' };
+          if (event.type === 'follow') result = { text: '我是你的電影夥伴！可以問「最近有什麼電影？」、查簡介或評論，也能記下片名、日期、同伴與心得。票根會先讓你確認再儲存。輸入「關於」可查看資料來源。' };
           else if (event.type === 'postback') result = decisionReply(store, actor, event.postback.data);
+          else if (['關於', '資料來源', 'about'].includes(event.message.text.trim().toLowerCase())) result = aboutReply();
           else result = await bot.respond(actor, event.message.text, job.id);
           await reply(event.replyToken, lineMessages(result));
           store.finishJob(job.id);

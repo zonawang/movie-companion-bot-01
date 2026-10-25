@@ -48,3 +48,10 @@ test('確認按鈕只能儲存點擊者自己的草稿，按鈕不經過 AI', as
   for (let i = 0; i < 100 && !app.replies.length; i++) await new Promise(resolve => setTimeout(resolve, 10));
   assert.equal(app.store.list('alice').length, 1);
 });
+test('關於入口提供 TMDB 來源聲明，不呼叫模型或讀取私人票根', async t => {
+  const app = await fixture(t, { respond: () => { throw new Error('關於頁不需要 AI'); } });
+  await app.post({ events: [{ ...event, message: { type: 'text', text: '關於' } }] });
+  for (let i = 0; i < 100 && !app.replies.length; i++) await new Promise(resolve => setTimeout(resolve, 10));
+  assert.equal(app.replies.length, 1);
+  assert.match(app.replies[0][1][0].text, /not endorsed or certified by TMDB/);
+});

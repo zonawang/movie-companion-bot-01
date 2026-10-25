@@ -12,7 +12,7 @@
 
 文章題目建議：**我用 Google ADK 做了一個 LINE 電影夥伴：先讓 AI 學會使用工具**。先寫想解決的日常問題，再放 LINE → ADK → 工具 → LINE 的圖，最後記下實際成功與遇到的錯誤。
 
-紀錄（2026-10-25）：新 LINE 帳號已完成串接。LINE 官方 webhook 測試為 200 OK，Use webhook 已啟用；使用者確認手機收到電影回覆，服務記錄確認 ADK 呼叫 `now_playing` 且 LINE 回覆成功。目前是虛構電影示範模式；真實手機截圖待補。詳見 [驗證紀錄](verification.md)。
+紀錄（2026-10-25）：新 LINE 帳號已完成串接。LINE 官方 webhook 測試為 200 OK，Use webhook 已啟用；使用者確認手機收到電影回覆，服務記錄確認 ADK 呼叫 `now_playing` 且 LINE 回覆成功。首次手機測試使用虛構電影；其後已接上真實 TMDB 資料。手機截圖待補。詳見 [驗證紀錄](verification.md)。
 
 ## Phase 2｜接上真實電影資料
 
@@ -23,6 +23,8 @@
 完成證據：成功查詢、有來源連結、查無資料時沒有補造內容。上映候選清單不等於每間影院的場次。
 
 文章題目建議：**AI 說得像真的還不夠：我讓電影夥伴先查資料，再回答**。
+
+紀錄（2026-10-25）：使用者已申請並在本機填入 TMDB Read Access Token。認證、真實上映候選、電影搜尋與評論 API 均成功；真實 ADK 測試觀察到 `now_playing`、`search_movies`、`movie_reviews`，LINE Bot 已切換 `tmdb` 模式。測試時發現模型把真實清單誤稱為示範資料，已把模式資訊明確寫入 agent instruction 並重新驗證。LINE 手機上的真實資料回覆待使用者確認；查無資料操作與截圖也待補。
 
 ## Phase 3｜把聊天變成票根
 
