@@ -24,7 +24,7 @@
 
 文章題目建議：**AI 說得像真的還不夠：我讓電影夥伴先查資料，再回答**。
 
-紀錄（2026-10-25）：使用者已申請並在本機填入 TMDB Read Access Token。認證、真實上映候選、電影搜尋與評論 API 均成功；真實 ADK 測試觀察到 `now_playing`、`search_movies`、`movie_reviews`，LINE Bot 已切換 `tmdb` 模式。測試時發現模型把真實清單誤稱為示範資料，已把模式資訊明確寫入 agent instruction 並重新驗證。LINE 手機上的真實資料回覆待使用者確認；查無資料操作與截圖也待補。
+紀錄（2026-10-25）：使用者已申請並在本機填入 TMDB Read Access Token。認證、真實上映候選、電影搜尋與評論 API 均成功；真實 ADK 測試觀察到 `now_playing`、`search_movies`、`movie_reviews`，LINE Bot 已切換 `tmdb` 模式。測試時發現模型把真實清單誤稱為示範資料，已把模式資訊明確寫入 agent instruction 並重新驗證。使用者已確認在 LINE 收到真實電影與來源連結，服務記錄也確認呼叫 `now_playing` 並成功回覆。查無資料操作與手機截圖待補。
 
 ## Phase 3｜把聊天變成票根
 
