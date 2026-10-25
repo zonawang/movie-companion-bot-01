@@ -62,7 +62,7 @@ Unknown name "exclusiveMinimum" ... Cannot find field.
 - 第一次真實測試：Node fetch 取得官網 HTTP 403。相同公開頁面透過標準 `node:https` client 回傳 200 並解析出 21 部電影區塊；未使用登入資訊、瀏覽器 cookie 或驗證挑戰。
 - `npm run smoke:cinema` 真正呼叫 Gemini，觀察到 `cinema_schedule`，篩出 2026-10-25 晚上 18:00 起的 6 部公告電影；後續呼叫 `search_movies`，取得《進擊的鼓手》簡介。這是當次讀取結果，之後可能變動。
 - 場次時間採程式格式輸出，保留官方更新與讀取時間；5 分鐘快取、併發請求合併，失敗不回傳過期資料作為現在場次。
-- 真實手機影城場次回覆待使用者確認。
+- 使用者已確認「有收到片名、時間與官方連結」，服務記錄同時顯示 `cinema_schedule`，LINE 事件為 `done`，完成手機影城場次實測。
 
 ## 尚未驗證
 
