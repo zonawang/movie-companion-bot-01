@@ -4,6 +4,11 @@
 
 第一版已實作 LINE webhook、ADK agent、七個工具與需要確認的個人票根收藏。2026-10-25 已完成新 LINE 帳號的電影查詢收發，並接上真實 TMDB 資料；目前仍由本機服務與開發用 HTTPS tunnel 運行，尚未部署為長期線上服務。詳見 [驗證紀錄](docs/verification.md)。
 
+## 實作文章
+
+- [第一篇｜從咖啡 Bot 到電影夥伴：用 ADK 從零開始](medium.md)
+- [第二篇｜今晚誠品放什麼？接上真實電影與場次資料](medium-02.md)
+
 ## ADK 實際負責什麼？
 
 ```mermaid
